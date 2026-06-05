@@ -40,6 +40,8 @@ set(EXECUTABLE_SRC
     PacketCrypto.cpp
     Protogen.cpp
     PackedGuid.cpp
+    WorldSessions.cpp
+    ../src/realm/WorldSessions.cpp
 )
 
 if(WIN32)
