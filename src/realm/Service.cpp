@@ -227,7 +227,10 @@ void Service::initialise(const opts::variables_map& args) try {
 	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, ctx->realm, logger);
 	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
 	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config_store, logger);
-	ctx->rpc_world = std::make_unique<WorldRPCClient>(*ctx->rpc, logger);
+
+	const auto& world_host = args["world.host"].as<std::string>();
+	const auto world_port = args["world.port"].as<std::uint16_t>();
+	ctx->rpc_world = std::make_unique<WorldRPCClient>(*ctx->rpc, world_host, world_port, logger);
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
@@ -466,6 +469,8 @@ opts::options_description Service::options() {
 		("realm.char_list_timeout", opts::value<unsigned int>()->required())
 		("spark.address", opts::value<std::string>()->required())
 		("spark.port", opts::value<std::uint16_t>()->required())
+		("world.host", opts::value<std::string>()->required())
+		("world.port", opts::value<std::uint16_t>()->required())
 		("stun.enabled", opts::value<bool>()->required())
 		("stun.server", opts::value<std::string>()->required())
 		("stun.port", opts::value<std::uint16_t>()->required())

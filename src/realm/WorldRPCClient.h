@@ -10,6 +10,8 @@
 
 #include <WorldClientStub.h>
 #include <logger/LoggerFwd.h>
+#include <cstdint>
+#include <string>
 
 namespace ember::realm {
 
@@ -41,7 +43,7 @@ class WorldRPCClient final : public services::WorldClient {
 	void connect_failed(const std::string_view ip, std::uint16_t port) override;
 
 public:
-	WorldRPCClient(spark::Server& spark, log::Logger& logger);
+	WorldRPCClient(spark::Server& spark, std::string host, std::uint16_t port, log::Logger& logger);
 };
 
 } // realm, ember
