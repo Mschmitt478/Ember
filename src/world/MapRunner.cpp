@@ -13,6 +13,7 @@
 #include <chrono>
 #include <source_location>
 #include <thread>
+#include <utility>
 
 using namespace std::chrono_literals;
 
@@ -23,9 +24,16 @@ const auto TARGET_UPDATE_TIME { 1000ms / UPDATE_FREQUENCY };
 const auto TIME_PERIOD = 1ms;
 const auto WATCHDOG_PERIOD = 120s;
 
-// placeholder
-void update(std::chrono::milliseconds delta) {
-	
+MapRunner::MapRunner(std::vector<std::int32_t> map_ids, log::Logger& logger)
+	: map_ids_(std::move(map_ids))
+	, logger_(logger)
+	, ticks_(0)
+	, elapsed_(0ms) {
+}
+
+void MapRunner::update(std::chrono::milliseconds delta) {
+	elapsed_ += delta;
+	++ticks_;
 }
 
 /* 
@@ -38,8 +46,9 @@ void update(std::chrono::milliseconds delta) {
  * A monotonic clock is being used as we don't want any changes in
  * system time (e.g. DST) to impact the game logic.
  */
-void run(log::Logger& log, bool& stop_flag) {
-	LOG_TRACE(log, log_func);
+void MapRunner::run(bool& stop_flag) {
+	LOG_TRACE(logger_, log_func);
+	LOG_INFO(logger_, "Starting map runner for {} map(s)", map_ids_.size());
 
 	const utility::ScopedTimerPeriod timer_guard(TIME_PERIOD);
 
@@ -51,10 +60,10 @@ void run(log::Logger& log, bool& stop_flag) {
 	 */
 	if(!timer_guard.success()) {
 		const auto src = std::source_location::current();
-		LOG_ERROR(log, "{}:{} - failed to set time period", src.file_name(), src.line());
+		LOG_ERROR(logger_, "{}:{} - failed to set time period", src.file_name(), src.line());
 	}
 
-	Watchdog watchdog(WATCHDOG_PERIOD, log);
+	Watchdog watchdog(WATCHDOG_PERIOD, logger_);
 
 	auto previous = std::chrono::steady_clock::now() - TARGET_UPDATE_TIME;
 
@@ -83,6 +92,16 @@ void run(log::Logger& log, bool& stop_flag) {
 
 		previous = begin;
 	}
+
+	LOG_INFO(logger_, "Stopped map runner after {} tick(s)", ticks_);
+}
+
+std::uint64_t MapRunner::ticks() const {
+	return ticks_;
+}
+
+const std::vector<std::int32_t>& MapRunner::map_ids() const {
+	return map_ids_;
 }
 
 } // map, ember
