@@ -15,7 +15,7 @@ namespace ember::realm {
 
 ClientContext::ClientContext(executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
                              RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
-                             const RealmService& realm_rpc, log::Logger& logger)
+                             const RealmService& realm_rpc, WorldRPCClient& world_rpc, log::Logger& logger)
 	: timer_(executor)
 	, cfg_store(cfg_store)
 	, dispatcher(dispatcher)
@@ -23,6 +23,7 @@ ClientContext::ClientContext(executor& executor, const ConfigStore& cfg_store, E
 	, account_rpc(account_rpc)
 	, character_rpc(character_rpc)
 	, realm_rpc(realm_rpc)
+	, world_rpc(world_rpc)
 	, logger(logger)
 	, active(false) {}
 

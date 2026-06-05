@@ -20,6 +20,7 @@ enum class EventType {
 	char_enum_response,
 	char_rename_response,
 	player_login,
+	world_enter_response,
 	timer_expired,
 	interval_timer_fire,
 	kick_self,

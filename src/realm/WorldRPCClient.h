@@ -10,11 +10,19 @@
 
 #include <WorldClientStub.h>
 #include <logger/LoggerFwd.h>
+#include <functional>
+#include <cstdint>
+#include <expected>
 
 namespace ember::realm {
 
 class WorldRPCClient final : public services::WorldClient {
+public:
+	using PlayerEnterCB = std::function<void(bool)>;
+
+private:
 	log::Logger& logger_;
+	spark::Link link_;
 
 	void handle_get_status_response(
 		const spark::Link& link,
@@ -36,12 +44,19 @@ class WorldRPCClient final : public services::WorldClient {
 		const spark::Link& link,
 		const rpc::World::PlayerLeaveResult& msg) override;
 
+	void handle_player_enter_reply(
+		const spark::Link& link,
+		std::expected<const rpc::World::PlayerEnterResult*, spark::Result> res,
+		const PlayerEnterCB& cb) const;
+
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 	void connect_failed(const std::string_view ip, std::uint16_t port) override;
 
 public:
 	WorldRPCClient(spark::Server& spark, log::Logger& logger);
+
+	void player_enter(std::uint64_t character_id, PlayerEnterCB cb) const;
 };
 
 } // realm, ember

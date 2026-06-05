@@ -19,6 +19,7 @@ class ConfigStore;
 class EventDispatcher;
 class RealmService;
 class RealmQueue;
+class WorldRPCClient;
 class ClientConnection;
 class ClientContextBuilder;
 

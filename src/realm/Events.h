@@ -29,6 +29,14 @@ struct PlayerLogin final : Event {
 	const std::uint64_t character_id_;
 };
 
+struct WorldEnterResponse final : Event {
+	explicit WorldEnterResponse(bool accepted)
+		: Event{ EventType::world_enter_response },
+		  accepted(accepted) { }
+
+	bool accepted;
+};
+
 struct QueuePosition final : Event {
 	explicit QueuePosition(std::size_t position)	
 		: Event { EventType::queue_update_position },
