@@ -9,7 +9,13 @@
 namespace ember.rpc.World;
 
 enum ErrorCode : short {
-	success
+	success,
+	invalid_request,
+	world_unavailable,
+	world_not_found,
+	session_exists,
+	session_not_found,
+	internal_error
 }
 
 table RequestStatus {
@@ -18,6 +24,9 @@ table RequestStatus {
 
 table PlayerEnterResult {
 	result:ErrorCode;
+	world_uuid:ulong;
+	map_id:uint;
+	instance_id:uint;
 }
 
 table PlayerLeaveResult {
@@ -41,22 +50,28 @@ table Status {
 }
 
 table RegisterWorld {
-	uuid:uint; // temp
+	uuid:ulong;
 	realm_id:uint;
+	map_id:uint;
+	instance_id:uint;
+	host:string;
+	port:ushort;
+}
+
+table RemoveWorld {
+	uuid:ulong;
+}
+
+table PlayerEnter {
+	account_id:uint;
+	character_id:ulong;
 	map_id:uint;
 	instance_id:uint;
 }
 
-table RemoveWorld {
-	uuid:uint; // temp
-}
-
-table PlayerEnter {
-	character_id:uint;
-}
-
 table PlayerLeave {
-	character_id:uint;
+	character_id:ulong;
+	world_uuid:ulong;
 }
 
 union Message {
