@@ -183,9 +183,58 @@ endif()
 
 # temporary Botan workarounds
 if(TARGET ${BOTAN_TARGET})
+    if(DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
+        set(_botan_vcpkg_prefix "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
+        set(_botan_vcpkg_header_dir "${_botan_vcpkg_prefix}/include/botan")
+        set(_botan_vcpkg_include "${_botan_vcpkg_prefix}/include")
+        set(_botan_vcpkg_release_lib "${_botan_vcpkg_prefix}/lib/libbotan-3.a")
+        set(_botan_vcpkg_debug_lib "${_botan_vcpkg_prefix}/debug/lib/libbotan-3.a")
+        if(EXISTS "${_botan_vcpkg_header_dir}")
+            set_target_properties(${BOTAN_TARGET} PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${_botan_vcpkg_include}")
+        endif()
+        if(EXISTS "${_botan_vcpkg_release_lib}")
+            set_target_properties(${BOTAN_TARGET} PROPERTIES
+                IMPORTED_LOCATION "${_botan_vcpkg_release_lib}"
+                IMPORTED_LOCATION_RELEASE "${_botan_vcpkg_release_lib}")
+        endif()
+        if(EXISTS "${_botan_vcpkg_debug_lib}")
+            set_property(TARGET ${BOTAN_TARGET} APPEND PROPERTY
+                IMPORTED_CONFIGURATIONS DEBUG RELEASE)
+            set_target_properties(${BOTAN_TARGET} PROPERTIES
+                IMPORTED_LOCATION_DEBUG "${_botan_vcpkg_debug_lib}")
+        endif()
+    endif()
+
+    get_target_property(_botan_includes ${BOTAN_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+    if(_botan_includes)
+        set(_botan_fixed_includes "")
+        foreach(_botan_include IN LISTS _botan_includes)
+            if(EXISTS "${_botan_include}")
+                list(APPEND _botan_fixed_includes "${_botan_include}")
+            else()
+                get_filename_component(_botan_include_parent "${_botan_include}" DIRECTORY)
+                set(_botan_vcpkg_header_dir "${_botan_include_parent}/botan")
+                if(EXISTS "${_botan_vcpkg_header_dir}")
+                    list(APPEND _botan_fixed_includes "${_botan_include_parent}")
+                endif()
+            endif()
+        endforeach()
+        if(_botan_fixed_includes)
+            set_target_properties(${BOTAN_TARGET} PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${_botan_fixed_includes}")
+        endif()
+    endif()
+
     get_target_property(_botan_release_lib ${BOTAN_TARGET} IMPORTED_LOCATION)
     if(_botan_release_lib)
         get_filename_component(_botan_lib_dir "${_botan_release_lib}" DIRECTORY)
+        get_filename_component(_botan_prefix "${_botan_lib_dir}" DIRECTORY)
+        set(_botan_vcpkg_header_dir "${_botan_prefix}/include/botan")
+        if(EXISTS "${_botan_vcpkg_header_dir}")
+            set_target_properties(${BOTAN_TARGET} PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${_botan_prefix}/include")
+        endif()
         get_filename_component(_botan_lib_name "${_botan_release_lib}" NAME)
         set(_botan_debug_lib "${_botan_lib_dir}/../debug/lib/${_botan_lib_name}")
         if(EXISTS "${_botan_debug_lib}")
