@@ -4,7 +4,7 @@ Project Ember's first running path should use the data tools that already exist 
 
 - `dbutils` for MySQL login/world schema install and migration application.
 - `dbcparser` for generated DBC loaders and future DBC validation.
-- Service configs that all point login/account/character/realm at the `mysql.db.login` connection profile.
+- Service configs that point login/account/character/realm at the `mysql.db.login` connection profile and prepare a `mysql.db.world` profile for the world runtime schema path.
 
 ## Local Database Wrapper
 
@@ -93,6 +93,7 @@ The current runtime services still read the `login` database connection profile:
 - `src/realm/Service.cpp`
 
 The `world` schema exists and `dbutils` can install it, but the current `world` service does not yet open a world database connection during startup.
+The smoke harness already emits `mysql.db.world` in `mysql_config.conf` so the world service can move to that profile without changing the local runtime wrapper.
 
 ## Remaining Data Work
 

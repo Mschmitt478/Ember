@@ -31,9 +31,12 @@ export EMBER_RUNTIME_DIR=.openclaw/smoke
 export EMBER_SMOKE_TIMEOUT=20
 export EMBER_DB_HOST=127.0.0.1
 export EMBER_DB_PORT=3306
-export EMBER_DB_USER=ember
-export EMBER_DB_PASSWORD=ember
-export EMBER_DB_NAME=ember_login
+export EMBER_LOGIN_DB=ember_login
+export EMBER_LOGIN_DB_USER=ember_login
+export EMBER_LOGIN_DB_PASSWORD=ember_login
+export EMBER_WORLD_DB=ember_world
+export EMBER_WORLD_DB_USER=ember_world
+export EMBER_WORLD_DB_PASSWORD=ember_world
 ```
 
 Prepare configs:
@@ -66,6 +69,7 @@ The generated runtime files live under `.openclaw/smoke` by default and are inte
 - Realm client bind: `127.0.0.1:8085`
 - World gateway bind: `127.0.0.1:8086`
 - Spark services: `127.0.0.1:6000` through `6005`
+- MySQL profiles: `mysql.db.login` for current login/account/character/realm services and `mysql.db.world` for the world runtime schema path.
 - STUN, port forwarding, metrics, and console input are disabled
 
 ## Current External Prerequisites

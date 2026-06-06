@@ -12,7 +12,10 @@ Environment:
   EMBER_SMOKE_TIMEOUT  Seconds to keep Fusion running in run mode. Default: 20
 
 Optional database values for generated mysql_config.conf:
-  EMBER_DB_HOST, EMBER_DB_PORT, EMBER_DB_USER, EMBER_DB_PASSWORD, EMBER_DB_NAME
+  EMBER_DB_HOST, EMBER_DB_PORT
+  EMBER_LOGIN_DB, EMBER_LOGIN_DB_USER, EMBER_LOGIN_DB_PASSWORD
+  EMBER_WORLD_DB, EMBER_WORLD_DB_USER, EMBER_WORLD_DB_PASSWORD
+  EMBER_DB_NAME, EMBER_DB_USER, and EMBER_DB_PASSWORD remain login fallbacks.
   MYSQL_CLIENT defaults to mysql for preflight-data.
 USAGE
 }
@@ -85,17 +88,27 @@ write_runtime_configs() {
   local dbc_path="$2"
   local db_host="${EMBER_DB_HOST:-127.0.0.1}"
   local db_port="${EMBER_DB_PORT:-3306}"
-  local db_user="${EMBER_DB_USER:-ember}"
-  local db_password="${EMBER_DB_PASSWORD:-ember}"
-  local db_name="${EMBER_DB_NAME:-ember_login}"
+  local login_db="${EMBER_LOGIN_DB:-${EMBER_DB_NAME:-ember_login}}"
+  local login_user="${EMBER_LOGIN_DB_USER:-${EMBER_DB_USER:-ember_login}}"
+  local login_password="${EMBER_LOGIN_DB_PASSWORD:-${EMBER_DB_PASSWORD:-ember_login}}"
+  local world_db="${EMBER_WORLD_DB:-ember_world}"
+  local world_user="${EMBER_WORLD_DB_USER:-ember_world}"
+  local world_password="${EMBER_WORLD_DB_PASSWORD:-ember_world}"
 
   mkdir -p "${runtime_dir}/logs"
 
   cat > "${runtime_dir}/mysql_config.conf" <<EOF
 [mysql.db.login]
-username = ${db_user}
-password = ${db_password}
-database = ${db_name}
+username = ${login_user}
+password = ${login_password}
+database = ${login_db}
+host = ${db_host}
+port = ${db_port}
+
+[mysql.db.world]
+username = ${world_user}
+password = ${world_password}
+database = ${world_db}
 host = ${db_host}
 port = ${db_port}
 EOF
