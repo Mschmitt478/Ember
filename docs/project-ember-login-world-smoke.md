@@ -67,7 +67,7 @@ The generated runtime files live under `.openclaw/smoke` by default and are inte
 The harness does not store credentials or ship data. A complete run still needs:
 
 - Extracted 1.12.1 DBC files.
-- A local MySQL-compatible database loaded with the login/character/world schemas expected by the current services.
+- A local MySQL-compatible database loaded with the login/character/world schemas expected by the current services. Use `scripts/openclaw/project-ember-db.sh` for the repo-native install/update path.
 - Built service binaries in `EMBER_BUILD_DIR`.
 
 ## Acceptance Checklist
