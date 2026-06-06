@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: project-ember-smoke.sh <prepare|preflight|run>
+Usage: project-ember-smoke.sh <prepare|preflight|preflight-data|run>
 
 Environment:
   EMBER_BUILD_DIR      CMake build directory. Default: build/openclaw-vcpkg
@@ -12,7 +12,11 @@ Environment:
   EMBER_SMOKE_TIMEOUT  Seconds to keep Fusion running in run mode. Default: 20
 
 Optional database values for generated mysql_config.conf:
-  EMBER_DB_HOST, EMBER_DB_PORT, EMBER_DB_USER, EMBER_DB_PASSWORD, EMBER_DB_NAME
+  EMBER_DB_HOST, EMBER_DB_PORT
+  EMBER_LOGIN_DB, EMBER_LOGIN_DB_USER, EMBER_LOGIN_DB_PASSWORD
+  EMBER_WORLD_DB, EMBER_WORLD_DB_USER, EMBER_WORLD_DB_PASSWORD
+  EMBER_DB_NAME, EMBER_DB_USER, and EMBER_DB_PASSWORD remain login fallbacks.
+  MYSQL_CLIENT defaults to mysql for preflight-data.
 USAGE
 }
 
@@ -84,17 +88,27 @@ write_runtime_configs() {
   local dbc_path="$2"
   local db_host="${EMBER_DB_HOST:-127.0.0.1}"
   local db_port="${EMBER_DB_PORT:-3306}"
-  local db_user="${EMBER_DB_USER:-ember}"
-  local db_password="${EMBER_DB_PASSWORD:-ember}"
-  local db_name="${EMBER_DB_NAME:-ember_login}"
+  local login_db="${EMBER_LOGIN_DB:-${EMBER_DB_NAME:-ember_login}}"
+  local login_user="${EMBER_LOGIN_DB_USER:-${EMBER_DB_USER:-ember_login}}"
+  local login_password="${EMBER_LOGIN_DB_PASSWORD:-${EMBER_DB_PASSWORD:-ember_login}}"
+  local world_db="${EMBER_WORLD_DB:-ember_world}"
+  local world_user="${EMBER_WORLD_DB_USER:-ember_world}"
+  local world_password="${EMBER_WORLD_DB_PASSWORD:-ember_world}"
 
   mkdir -p "${runtime_dir}/logs"
 
   cat > "${runtime_dir}/mysql_config.conf" <<EOF
 [mysql.db.login]
-username = ${db_user}
-password = ${db_password}
-database = ${db_name}
+username = ${login_user}
+password = ${login_password}
+database = ${login_db}
+host = ${db_host}
+port = ${db_port}
+
+[mysql.db.world]
+username = ${world_user}
+password = ${world_password}
+database = ${world_db}
 host = ${db_host}
 port = ${db_port}
 EOF
@@ -362,6 +376,41 @@ check_binary() {
   [[ -x "${path}" ]] || die "missing executable: ${path}"
 }
 
+warn() {
+  echo "warning: $*" >&2
+}
+
+check_dbc_inputs() {
+  local dbc_path="$1"
+
+  [[ -n "${dbc_path}" ]] || die "EMBER_DBC_PATH is required for service startup"
+  [[ -d "${dbc_path}" ]] || die "DBC path does not exist: ${dbc_path}"
+
+  local required=(
+    "Cfg_Categories.dbc"
+    "ChrClasses.dbc"
+    "ChrRaces.dbc"
+    "Map.dbc"
+  )
+
+  for file in "${required[@]}"; do
+    [[ -f "${dbc_path}/${file}" ]] || die "missing required DBC file: ${dbc_path}/${file}"
+  done
+
+  local wotlk_markers=(
+    "Achievement.dbc"
+    "GlyphProperties.dbc"
+    "LFGDungeons.dbc"
+  )
+
+  for file in "${wotlk_markers[@]}"; do
+    if [[ -f "${dbc_path}/${file}" ]]; then
+      warn "DBC path contains ${file}; verify this is not a WotLK/AzerothCore extract"
+      return 0
+    fi
+  done
+}
+
 preflight() {
   local root="$1"
   local build_dir="$2"
@@ -377,13 +426,32 @@ preflight() {
 
   [[ -d "${runtime_dir}" ]] || die "runtime directory is missing; run prepare first"
   [[ -f "${runtime_dir}/fusion.conf" ]] || die "fusion.conf is missing; run prepare first"
-  [[ -n "${dbc_path}" ]] || die "EMBER_DBC_PATH is required for service startup"
-  [[ -d "${dbc_path}" ]] || die "DBC path does not exist: ${dbc_path}"
+  check_dbc_inputs "${dbc_path}"
 
   echo "preflight ok"
   echo "repo: ${root}"
   echo "build: ${build_dir}"
   echo "runtime: ${runtime_dir}"
+  echo "dbc: ${dbc_path}"
+}
+
+preflight_data() {
+  local root="$1"
+  local build_dir="$2"
+  local dbc_path="$3"
+  local mysql_client="${MYSQL_CLIENT:-mysql}"
+
+  check_binary "${build_dir}/src/tools/dbutils/dbutils"
+  check_binary "${build_dir}/src/tools/srpgen/srpgen"
+  check_binary "${root}/scripts/openclaw/project-ember-db.sh"
+  check_binary "${root}/scripts/openclaw/project-ember-seed.sh"
+  command -v "${mysql_client}" >/dev/null 2>&1 || die "missing mysql client: ${mysql_client}"
+  check_dbc_inputs "${dbc_path}"
+
+  echo "data preflight ok"
+  echo "dbutils: ${build_dir}/src/tools/dbutils/dbutils"
+  echo "srpgen: ${build_dir}/src/tools/srpgen/srpgen"
+  echo "mysql client: ${mysql_client}"
   echo "dbc: ${dbc_path}"
 }
 
@@ -413,6 +481,9 @@ main() {
       ;;
     preflight)
       preflight "${root}" "${build_dir}" "${runtime_dir}" "${dbc_path}"
+      ;;
+    preflight-data)
+      preflight_data "${root}" "${build_dir}" "${dbc_path}"
       ;;
     run)
       [[ -n "${dbc_path}" ]] || die "EMBER_DBC_PATH is required for service startup"

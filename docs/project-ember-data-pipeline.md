@@ -4,7 +4,7 @@ Project Ember's first running path should use the data tools that already exist 
 
 - `dbutils` for MySQL login/world schema install and migration application.
 - `dbcparser` for generated DBC loaders and future DBC validation.
-- Service configs that all point login/account/character/realm at the `mysql.db.login` connection profile.
+- Service configs that point login/account/character/realm at the `mysql.db.login` connection profile and prepare a `mysql.db.world` profile for the world runtime schema path.
 
 ## Local Database Wrapper
 
@@ -38,6 +38,14 @@ Install, then update:
 scripts/openclaw/project-ember-db.sh bootstrap
 ```
 
+Seed a smoke-test login user and realm after the login schema exists:
+
+```sh
+cmake --build build/openclaw-vcpkg --target srpgen
+scripts/openclaw/project-ember-seed.sh print
+scripts/openclaw/project-ember-seed.sh apply
+```
+
 ## Environment
 
 The wrapper accepts:
@@ -58,6 +66,23 @@ The wrapper accepts:
 
 Do not commit real database passwords. Export them only in the local shell or use a local secret manager.
 
+`scripts/openclaw/project-ember-seed.sh` accepts the same login database connection variables plus:
+
+- `MYSQL_CLIENT`: mysql-compatible client, default `mysql`.
+- `EMBER_DEFAULT_USER`: smoke account username, default `OPENCLAW`.
+- `EMBER_DEFAULT_PASS`: smoke account password, default `openclaw`.
+- `EMBER_DEFAULT_EMAIL`: smoke account email, default `openclaw@example.invalid`.
+- `EMBER_REALM_ID`: realm id to upsert, default `1`.
+- `EMBER_REALM_NAME`: realm name, default `Ember Local`.
+- `EMBER_REALM_IP`: realm IP advertised to the client, default `127.0.0.1`.
+- `EMBER_REALM_PORT`: realm port advertised to the client, default `8085`.
+- `EMBER_REALM_TYPE`: realm type, default `1`.
+- `EMBER_REALM_FLAGS`: realm flags, default `0`.
+- `EMBER_REALM_POPULATION`: realm population, default `0`.
+- `EMBER_REALM_CREATION`: realm creation setting, default `0`.
+- `EMBER_REALM_CATEGORY`: realm category, default `1`.
+- `EMBER_REALM_REGION`: realm region, default `3`.
+
 ## Current Shape
 
 The current runtime services still read the `login` database connection profile:
@@ -68,11 +93,12 @@ The current runtime services still read the `login` database connection profile:
 - `src/realm/Service.cpp`
 
 The `world` schema exists and `dbutils` can install it, but the current `world` service does not yet open a world database connection during startup.
+The smoke harness already emits `mysql.db.world` in `mysql_config.conf` so the world service can move to that profile without changing the local runtime wrapper.
 
 ## Remaining Data Work
 
 - Load Matt's extracted 1.12.1 DBC directory through `EMBER_DBC_PATH` for the smoke harness.
 - Build a local MySQL database using `project-ember-db.sh bootstrap`.
-- Seed at least one login user, realm row, and any required lookup rows for a client-visible realm list.
+- Run the smoke seed against a local MySQL/MariaDB instance once one is available.
 - Decide whether the `world` schema should hold dynamic world runtime state only, with static gameplay data remaining DBC-backed for the initial build.
 - Convert the smoke harness into OCLAW-18 automated integration coverage once seeded data is deterministic.

@@ -31,9 +31,12 @@ export EMBER_RUNTIME_DIR=.openclaw/smoke
 export EMBER_SMOKE_TIMEOUT=20
 export EMBER_DB_HOST=127.0.0.1
 export EMBER_DB_PORT=3306
-export EMBER_DB_USER=ember
-export EMBER_DB_PASSWORD=ember
-export EMBER_DB_NAME=ember_login
+export EMBER_LOGIN_DB=ember_login
+export EMBER_LOGIN_DB_USER=ember_login
+export EMBER_LOGIN_DB_PASSWORD=ember_login
+export EMBER_WORLD_DB=ember_world
+export EMBER_WORLD_DB_USER=ember_world
+export EMBER_WORLD_DB_PASSWORD=ember_world
 ```
 
 Prepare configs:
@@ -48,6 +51,12 @@ Check that binaries, configs, and DBC inputs are present:
 scripts/openclaw/project-ember-smoke.sh preflight
 ```
 
+Check that the database/seed prerequisites for a full smoke run are present:
+
+```sh
+scripts/openclaw/project-ember-smoke.sh preflight-data
+```
+
 Run the smoke:
 
 ```sh
@@ -60,6 +69,7 @@ The generated runtime files live under `.openclaw/smoke` by default and are inte
 - Realm client bind: `127.0.0.1:8085`
 - World gateway bind: `127.0.0.1:8086`
 - Spark services: `127.0.0.1:6000` through `6005`
+- MySQL profiles: `mysql.db.login` for current login/account/character/realm services and `mysql.db.world` for the world runtime schema path.
 - STUN, port forwarding, metrics, and console input are disabled
 
 ## Current External Prerequisites
@@ -68,6 +78,7 @@ The harness does not store credentials or ship data. A complete run still needs:
 
 - Extracted 1.12.1 DBC files.
 - A local MySQL-compatible database loaded with the login/character/world schemas expected by the current services. Use `scripts/openclaw/project-ember-db.sh` for the repo-native install/update path.
+- A seeded smoke-test login user and realm. Use `scripts/openclaw/project-ember-seed.sh` after the login schema exists.
 - Built service binaries in `EMBER_BUILD_DIR`.
 
 ## Acceptance Checklist
@@ -75,6 +86,8 @@ The harness does not store credentials or ship data. A complete run still needs:
 - `fusion`, `login`, `account`, `character`, `realm`, and `world` binaries exist.
 - Smoke configs are generated without secrets committed to git.
 - `preflight` fails fast for missing binaries, missing runtime config, or missing DBC data.
+- `preflight-data` fails fast for missing `dbutils`, `srpgen`, seed wrappers, mysql client, or DBC inputs.
+- `project-ember-seed.sh print` emits repeatable SQL for a smoke account and local realm without connecting to MySQL.
 - `run` starts Fusion using the generated local-only configuration and exits under the configured timeout.
 
 ## Follow-up Tickets
