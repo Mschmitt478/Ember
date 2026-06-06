@@ -48,6 +48,12 @@ Check that binaries, configs, and DBC inputs are present:
 scripts/openclaw/project-ember-smoke.sh preflight
 ```
 
+Check that the database/seed prerequisites for a full smoke run are present:
+
+```sh
+scripts/openclaw/project-ember-smoke.sh preflight-data
+```
+
 Run the smoke:
 
 ```sh
@@ -76,6 +82,7 @@ The harness does not store credentials or ship data. A complete run still needs:
 - `fusion`, `login`, `account`, `character`, `realm`, and `world` binaries exist.
 - Smoke configs are generated without secrets committed to git.
 - `preflight` fails fast for missing binaries, missing runtime config, or missing DBC data.
+- `preflight-data` fails fast for missing `dbutils`, `srpgen`, seed wrappers, mysql client, or DBC inputs.
 - `project-ember-seed.sh print` emits repeatable SQL for a smoke account and local realm without connecting to MySQL.
 - `run` starts Fusion using the generated local-only configuration and exits under the configured timeout.
 
