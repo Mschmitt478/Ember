@@ -68,6 +68,7 @@ The harness does not store credentials or ship data. A complete run still needs:
 
 - Extracted 1.12.1 DBC files.
 - A local MySQL-compatible database loaded with the login/character/world schemas expected by the current services. Use `scripts/openclaw/project-ember-db.sh` for the repo-native install/update path.
+- A seeded smoke-test login user and realm. Use `scripts/openclaw/project-ember-seed.sh` after the login schema exists.
 - Built service binaries in `EMBER_BUILD_DIR`.
 
 ## Acceptance Checklist
@@ -75,6 +76,7 @@ The harness does not store credentials or ship data. A complete run still needs:
 - `fusion`, `login`, `account`, `character`, `realm`, and `world` binaries exist.
 - Smoke configs are generated without secrets committed to git.
 - `preflight` fails fast for missing binaries, missing runtime config, or missing DBC data.
+- `project-ember-seed.sh print` emits repeatable SQL for a smoke account and local realm without connecting to MySQL.
 - `run` starts Fusion using the generated local-only configuration and exits under the configured timeout.
 
 ## Follow-up Tickets
