@@ -29,17 +29,36 @@ void WorldRPCServer::on_link_down(const spark::Link& link) {
 
 std::optional<StatusT>
 WorldRPCServer::handle_get_status(const RequestStatus& msg, const Link& link, const Token& token) {
-	return std::nullopt;
+	(void) msg;
+	(void) token;
+
+	LOG_TRACE(logger_, "Status requested by {}", link.peer_banner);
+
+	StatusT status;
+	status.population = 0;
+	return status;
 }
 
 std::optional<PlayerEnterResultT>
 WorldRPCServer::handle_player_enter(const PlayerEnter& msg, const Link& link, const Token& token) {
-	return std::nullopt;
+	(void) token;
+
+	LOG_DEBUG(logger_, "Player enter requested by {} for character {}", link.peer_banner, msg.character_id());
+
+	PlayerEnterResultT result;
+	result.result = ErrorCode::success;
+	return result;
 }
 
 std::optional<PlayerLeaveResultT>
 WorldRPCServer::handle_player_leave(const PlayerLeave& msg, const Link& link, const Token& token) {
-	return std::nullopt;
+	(void) token;
+
+	LOG_DEBUG(logger_, "Player leave requested by {} for character {}", link.peer_banner, msg.character_id());
+
+	PlayerLeaveResultT result;
+	result.result = ErrorCode::success;
+	return result;
 }
 
 } // world, ember
