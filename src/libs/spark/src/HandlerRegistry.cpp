@@ -83,7 +83,7 @@ std::vector<Handler*> HandlerRegistry::services(const std::string& type) const {
 std::vector<std::string> HandlerRegistry::services() const {
 	std::lock_guard guard(mutex_);
 	auto view = services_ | std::views::keys;
-	return std::ranges::to<std::vector>(view);
+	return { view.begin(), view.end() };
 }
 
 } // spark, ember

@@ -209,7 +209,7 @@ void validate_options(const opts::variables_map& args, log::Logger& logger) {
 
 bool validate_db_names(std::span<const std::string> input_names, log::Logger& logger) {
 	auto view = db_args | std::views::keys;
-	auto valid_names = std::ranges::to<std::vector>(view);
+	std::vector valid_names(view.begin(), view.end());
 	std::vector<std::string_view> bad_names;
 	std::vector<std::string_view> input(input_names.begin(), input_names.end());
 

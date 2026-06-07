@@ -47,11 +47,11 @@ std::vector<std::string> parse_input(const std::string_view input, bool escape) 
 		if(escape) {
 			boost::escaped_list_separator<char> sep('\\', ' ', '"');
 			boost::tokenizer tok(str, sep);
-			tokens.assign_range(tok);
+			tokens.assign(tok.begin(), tok.end());
 		} else {
 			boost::char_separator<char> sep(" ");
 			boost::tokenizer tok(str, sep);;
-			tokens.assign_range(tok);
+			tokens.assign(tok.begin(), tok.end());
 		}
 	} catch(boost::escaped_list_error& e) {
 		throw parse_error(e.what());
