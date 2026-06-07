@@ -149,6 +149,12 @@ App_Data/*.ldf
 # vcpkg
 vcpkg_installed/
 
+# Local runtime configuration and secrets
+configs/*.conf
+configs/*_config.conf
+configs/secrets/*.txt
+!configs/**/*.dist
+
 # =========================
 # Windows detritus
 # =========================
