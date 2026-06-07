@@ -30,6 +30,10 @@ tcp_no_delay = true  # Toggle Nagle's algorithm
 address = 127.0.0.1
 port = 6002
 
+[world]
+host = 127.0.0.1
+port = 6005
+
 [nsd]
 host = 127.0.0.1
 port = 6010

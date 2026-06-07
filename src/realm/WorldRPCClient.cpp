@@ -8,16 +8,17 @@
 
 #include "WorldRPCClient.h"
 #include <logger/Logger.h>
+#include <utility>
 
 namespace ember::realm {
 
 using namespace spark;
 using namespace rpc::World;
 
-WorldRPCClient::WorldRPCClient(spark::Server& spark, log::Logger& logger)
+WorldRPCClient::WorldRPCClient(spark::Server& spark, std::string host, std::uint16_t port, log::Logger& logger)
 	: WorldClient(spark)
 	, logger_(logger) {
-	connect("127.0.0.1", 6005);
+	connect(std::move(host), port);
 }
 
 void WorldRPCClient::connect_failed(const std::string_view ip, std::uint16_t port) {
