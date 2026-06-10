@@ -15,7 +15,7 @@ namespace ember::realm {
 class WorldConnection;
 
 class WorldSessions final {
-	static inline thread_local std::unordered_map<unsigned int, WorldConnection*> connections_;
+	static inline thread_local boost::unordered_flat_map<unsigned int, WorldConnection*> connections_;
 
 public:
 	void insert(unsigned int map_id, WorldConnection* connection);
