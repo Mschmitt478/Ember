@@ -75,7 +75,8 @@ int Service::run(const boost::program_options::variables_map& args) {
 	SLOG_INFO(logger, "{} started successfully in {}", app_name, utility::time_elapsed_format(time));
 	start_time = time;
 
-	map::run(logger, stop_flag);
+	ctx->map_runner = std::make_unique<map::MapRunner>(maps, logger);
+	ctx->map_runner->run(stop_flag);
 
 	// temp bits again
 	ctx->spark->shutdown();

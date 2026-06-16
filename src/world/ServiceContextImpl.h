@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "MapRunner.h"
 #include "WorldRPCServer.h"
 #include <spark/Server.h>
 #include <dbcreader/Storage.h>
@@ -19,6 +20,7 @@ struct ServiceContext::Impl {
 	std::unique_ptr<dbc::Storage> dbcs;
 	std::unique_ptr<spark::Server> spark;
 	std::unique_ptr<WorldRPCServer> world_rpc_service;
+	std::unique_ptr<map::MapRunner> map_runner;
 };
 
-} // character, ember
+} // world, ember
