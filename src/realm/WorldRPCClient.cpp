@@ -8,6 +8,8 @@
 
 #include "WorldRPCClient.h"
 #include <logger/Logger.h>
+#include <cstdint>
+#include <utility>
 
 namespace ember::realm {
 
@@ -18,6 +20,16 @@ WorldRPCClient::WorldRPCClient(spark::Server& spark, log::Logger& logger)
 	: WorldClient(spark)
 	, logger_(logger) {
 	connect("127.0.0.1", 6005);
+}
+
+void WorldRPCClient::player_enter(std::uint64_t character_id, PlayerEnterCB cb) const {
+	PlayerEnterT msg {
+		.character_id = static_cast<std::uint32_t>(character_id)
+	};
+
+	send<PlayerEnterResult>(msg, link_, [this, cb = std::move(cb)](auto link, auto message) {
+		handle_player_enter_reply(link, message, cb);
+	});
 }
 
 void WorldRPCClient::connect_failed(const std::string_view ip, std::uint16_t port) {
@@ -40,12 +52,25 @@ void WorldRPCClient::handle_player_enter_response(const Link& link, const Player
 
 }
 
+void WorldRPCClient::handle_player_enter_reply(
+	const Link& link,
+	std::expected<const PlayerEnterResult*, spark::Result> res,
+	const PlayerEnterCB& cb) const {
+	if(!res) {
+		cb(false);
+		return;
+	}
+
+	cb((*res)->result() == ErrorCode::success);
+}
+
 void WorldRPCClient::handle_player_leave_response(const Link& link, const PlayerLeaveResult& msg) {
 
 }
 
 void WorldRPCClient::on_link_up(const Link& link) {
 	LOG_DEBUG(logger_, "Link up: {}", link.peer_banner);
+	link_ = link;
 }
 
 void WorldRPCClient::on_link_down(const Link& link) {

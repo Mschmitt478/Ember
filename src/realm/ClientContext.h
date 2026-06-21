@@ -70,7 +70,7 @@ class ClientContext {
 public:
 	ClientContext(executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
 	              RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
-	              const RealmService& realm_rpc, log::Logger& logger);
+	              const RealmService& realm_rpc, WorldRPCClient& world_rpc, log::Logger& logger);
 
 	std::string_view whoami() const;
 
@@ -112,6 +112,7 @@ public:
 	AccountClient& account_rpc;
 	CharacterClient& character_rpc;
 	const RealmService& realm_rpc;
+	WorldRPCClient& world_rpc;
 	log::Logger& logger;
 	bool active;
 

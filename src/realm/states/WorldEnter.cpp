@@ -11,6 +11,7 @@
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
+#include "../WorldRPCClient.h"
 #include <commands/Utility.h>
 #include <logger/CommandSink.h>
 #include <protocol/Deserialise.h>
@@ -86,10 +87,7 @@ std::uint32_t get_time() {
 	return tm_now.tm_min + hour + dow + day + month + year;
 }
 
-void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
-    auto& state_ctx = std::get<Context>(ctx.state_ctx);
-    state_ctx.character_id = event.character_id_;
-
+void send_initial_world_packets(ClientContext& ctx) {
 	protocol::smsg_trigger_cinematic cinematic;
 	cinematic->sequence_id = 84; // temp
 	ctx.send(cinematic);
@@ -130,6 +128,30 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
 	motd->player_guid = 0;
 	motd->player_tag = protocol::PlayerChatTag::tag_none;
 	ctx.send(motd);
+}
+
+void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
+    auto& state_ctx = std::get<Context>(ctx.state_ctx);
+    state_ctx.character_id = event.character_id_;
+
+	auto* dispatcher = &ctx.dispatcher;
+	const auto uuid = ctx.handler().uuid();
+
+	ctx.world_rpc.player_enter(event.character_id_, [dispatcher, uuid](bool accepted) {
+		dispatcher->post(uuid, WorldEnterResponse(accepted));
+	});
+}
+
+void handle_world_enter_response(ClientContext& ctx, const WorldEnterResponse& event) {
+	if(!event.accepted) {
+		protocol::smsg_character_login_failed response;
+		response->result = protocol::Result::char_login_no_world;
+		ctx.send(response);
+		ctx.state_update(ClientState::cs_character_list);
+		return;
+	}
+
+	send_initial_world_packets(ctx);
 }
 
 void enter(ClientContext& ctx) {
@@ -623,6 +645,9 @@ void handle_event(ClientContext& ctx, const Event& event) {
         case player_login:
             initiate_player_login(ctx, event.as<PlayerLogin>());
             break;
+		case world_enter_response:
+			handle_world_enter_response(ctx, event.as<WorldEnterResponse>());
+			break;
 		case system_message:
 			system_msg(ctx, event.as<SystemMessage>());
 			break;

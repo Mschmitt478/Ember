@@ -244,7 +244,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	ClientContextBuilder ctx_builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,
-		*ctx->rpc_character, *ctx->rpc_realm, logger
+		*ctx->rpc_character, *ctx->rpc_realm, *ctx->rpc_world, logger
 	);
 
 	ClientConnectionBuilder cc_builder(*ctx->dispatcher, logger);
